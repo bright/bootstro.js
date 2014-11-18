@@ -146,15 +146,20 @@ $(document).ready(function () {
         function getPopup (i) {
             var p = {};
             var $el = getElement(i);
-            var t = '';
+            var title = '';
+
+            var counterPrefix = settings.counterPrefix || '';
+            var counterSeparator = settings.counterSeparator || '/';
+
             if (count > 1) {
-                t = '<span class="label label-success">' + (i + 1) + '/' + count + '</span>';
+                title = '<span class="bootstro-counter label label-success">' + counterPrefix + (i + 1) + counterSeparator + count + '</span>';
             }
+
             p.title = $el.attr('data-bootstro-title') || '';
-            if (p.title !== '' && t !== '') {
-                p.title = t + ' - ' + p.title;
+            if (p.title !== '' && title !== '') {
+                p.title = title + ' - ' + p.title;
             } else if (p.title === '') {
-                p.title = t;
+                p.title = title;
             }
 
             p.content = $el.attr('data-bootstro-content') || '';
@@ -198,6 +203,8 @@ $(document).ready(function () {
             bootstro.destroyPopover(activeIndex);
             bootstro.unbind();
             $('.bootstro-backdrop').remove();
+            $('body').removeClass('bootstro-open');
+
             if (typeof settings.onExit === 'function') {
                 settings.onExit.call(this, {idx: activeIndex});
             }
@@ -222,7 +229,14 @@ $(document).ready(function () {
                     });
                 }
 
+                var ancestorClass = 'bootstro-ancestor';
+                $('.' + ancestorClass).removeClass(ancestorClass);
+                $el.parentsUntil('body,.bootstro-stop-ancestors').addClass(ancestorClass);
+
+                $el.attr('data-bootstro-original-title', $el.attr('title'));
+                $el.attr('title', '');
                 $el.popover(p).popover('show');
+                $el.attr('title', $el.attr('data-bootstro-original-title')); // unfixing bootstrap...
 
                 $el.siblings('.popover')
                     .on('click.bootstro', '.bootstro-next-btn', function (e) {
@@ -289,6 +303,8 @@ $(document).ready(function () {
             if (count > 0 && $('div.bootstro-backdrop').length === 0) {
                 // Prevents multiple copies
                 $('<div class="bootstro-backdrop"></div>').appendTo('body');
+                $('body').addClass('bootstro-open');
+
                 bootstro.bind();
                 bootstro.goTo(0);
             }
