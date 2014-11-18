@@ -15,6 +15,8 @@ $(document).ready(function () {
         var $elements; //jquery elements to be highlighted
         var count;
         var activeIndex = null; //index of active item
+        var defaultOrder = true; // if true the DOM order is followed. it is changed to false when step index is given for atleast one element.
+        var indexes;
 
         var defaults = {
             nextButtonText: 'Next &raquo;', //will be wrapped with button as below
@@ -99,9 +101,9 @@ $(document).ready(function () {
             }
 
             if (count !== 1) {
-                if (i === 0) {
+                if (isFirst(i)) {
                     content = content + nextButton;
-                } else if (i === count - 1) {
+                } else if (isLast(i)) {
                     content = content + prevButton;
                 } else {
                     content = content + nextButton + prevButton;
@@ -113,8 +115,47 @@ $(document).ready(function () {
             return content;
         }
 
+        function nextIndex(indexToTry) {
+            var closestIndex = null;
+
+            // loop and find the next available value less than or equal to the indexToTry
+            $.each(indexes, function (key, val) {
+                if (val >= indexToTry) {
+                    closestIndex = val;
+                    return false;
+                }
+            });
+            return closestIndex;
+        }
+
+        function prevIndex(indexToTry) {
+            var closestIndex = null;
+            var reverseIndexes = $.makeArray(indexes).reverse();
+
+            // loop and find the previous available value less than or equal to the indexToTry
+            $.each(reverseIndexes, function (key, val) {
+                if (val <= indexToTry) {
+                    closestIndex = val;
+                    return false;
+                }
+            });
+            return closestIndex;
+        }
+
+        function getStepCount(i) {
+            return defaultOrder ? i : $.inArray(i, indexes);
+        }
+
+        function isLast(i) {
+            return i === (defaultOrder ? count - 1 : indexes.get(-1));
+        }
+
+        function isFirst(i) {
+            return i === (defaultOrder ? 0 : indexes.get(0));
+        }
+
         //prep objects from json and return selector
-        function processItems (popover) {
+        function processItems(popover) {
             var selectorArr = [];
             $.each(popover, function (t, e) {
                 //build the selector
@@ -133,7 +174,7 @@ $(document).ready(function () {
         }
 
         //get the element to intro at stack i 
-        function getElement (i) {
+        function getElement(i) {
             //get the element with data-bootstro-step=i 
             //or otherwise the the natural order of the set
             if ($elements.filter('[data-bootstro-step=' + i + ']').size() > 0) {
@@ -143,7 +184,7 @@ $(document).ready(function () {
             }
         }
 
-        function getPopup (i) {
+        function getPopup(i) {
             var p = {};
             var $el = getElement(i);
             var title = '';
@@ -152,7 +193,7 @@ $(document).ready(function () {
             var counterSeparator = settings.counterSeparator || '/';
 
             if (count > 1) {
-                title = '<span class="bootstro-counter label label-success">' + counterPrefix + (i + 1) + counterSeparator + count + '</span>';
+                title = '<span class="bootstro-counter label label-success">' + counterPrefix + (getStepCount(i) + 1) + counterSeparator + count + '</span>';
             }
 
             p.title = $el.attr('data-bootstro-title') || '';
@@ -180,7 +221,7 @@ $(document).ready(function () {
 
             //resize popover if it's explicitly specified
             //note: this is ugly. Could have been best if popover supports width & height
-            p.template = '<div class="popover bootstro-popover bootstro-popover-' + (i + 1) + '" style="' + style + '">' +
+            p.template = '<div class="popover bootstro-popover bootstro-popover-' + (getStepCount(i) + 1) + '" style="' + style + '">' +
                 '<div class="arrow"></div>' +
                 '<div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div>' +
                 '</div>';
@@ -206,7 +247,7 @@ $(document).ready(function () {
             $('body').removeClass('bootstro-open');
 
             if (typeof settings.onExit === 'function') {
-                settings.onExit.call(this, {idx: activeIndex});
+                settings.onExit.call(this, { idx: getStepCount(activeIndex) });
             }
         };
 
@@ -274,23 +315,25 @@ $(document).ready(function () {
         };
 
         bootstro.next = function () {
-            if (activeIndex + 1 === count) {
+            if (isLast(activeIndex)) {
                 if (typeof settings.onComplete === 'function') {
-                    settings.onComplete.call(this, {idx: activeIndex});
+                    settings.onComplete.call(this, { idx: getStepCount(activeIndex) });
                 }
             } else {
-                bootstro.goTo(activeIndex + 1);
+                defaultOrder ? bootstro.goTo(activeIndex + 1) : bootstro.goTo(nextIndex(activeIndex + 1));
+
                 if (typeof settings.onStep === 'function') {
-                    settings.onStep.call(this, {idx: activeIndex, direction: 'next'});
+                    settings.onStep.call(this, {idx: getStepCount(activeIndex), direction: 'next'});
                 }
             }
         };
 
         bootstro.prev = function () {
-            if (activeIndex !== 0) {
-                bootstro.goTo(activeIndex - 1);
+            if (!isFirst(activeIndex)) {
+                defaultOrder ? bootstro.goTo(activeIndex - 1) : bootstro.goTo(prevIndex(activeIndex - 1));
+
                 if (typeof settings.onStep === 'function') {
-                    settings.onStep.call(this, {idx: activeIndex, direction: 'prev'});
+                    settings.onStep.call(this, {idx: getStepCount(activeIndex), direction: 'prev'});
                 }
             }
         };
@@ -306,7 +349,23 @@ $(document).ready(function () {
                 $('body').addClass('bootstro-open');
 
                 bootstro.bind();
-                bootstro.goTo(0);
+
+                indexes = $elements.map(function () {
+                    return parseInt($(this).attr('data-bootstro-step'));
+                });
+
+                // set defaultOrder to true in order to follow DOM order when all the elements are not provided with data-bootstro-step attr
+                defaultOrder = $.grep(indexes, function (x) {
+                    return !isNaN(x);
+                }).length === 0;
+
+                if (!defaultOrder) {
+                    indexes = indexes.sort(function (a, b) {
+                        return a - b;
+                    });
+                }
+
+                defaultOrder ? bootstro.goTo(0) : bootstro.goTo(nextIndex(0));
             }
         };
 
@@ -322,7 +381,6 @@ $(document).ready(function () {
                         if (data.success) {
                             //result is an array of {selector:'','title':'','width', ...}
                             var popover = data.result;
-                            //console.log(popover);
                             selector = processItems(popover);
                             bootstro._start(selector);
                         }
