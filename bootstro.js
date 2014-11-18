@@ -117,11 +117,14 @@ $(document).ready(function () {
         function processItems (popover) {
             var selectorArr = [];
             $.each(popover, function (t, e) {
-                //only deal with the visible element
                 //build the selector
                 $.each(e, function (j, attr) {
-                    $(e.selector).attr('data-bootstro-' + j, attr);
+                    if (typeof attr !== 'function') {
+                        $(e.selector).attr('data-bootstro-' + j, attr);
+                    }
                 });
+
+                //only deal with the visible element
                 if ($(e.selector).is(':visible')) {
                     selectorArr.push(e.selector);
                 }
@@ -173,8 +176,8 @@ $(document).ready(function () {
             //resize popover if it's explicitly specified
             //note: this is ugly. Could have been best if popover supports width & height
             p.template = '<div class="popover bootstro-popover bootstro-popover-' + (i + 1) + '" style="' + style + '">' +
-                    '<div class="arrow"></div>' +
-                    '<div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div>' +
+                '<div class="arrow"></div>' +
+                '<div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div>' +
                 '</div>';
 
             return p;
@@ -194,7 +197,7 @@ $(document).ready(function () {
         bootstro.stop = function () {
             bootstro.destroyPopover(activeIndex);
             bootstro.unbind();
-            $('div.bootstro-backdrop').remove();
+            $('.bootstro-backdrop').remove();
             if (typeof settings.onExit === 'function') {
                 settings.onExit.call(this, {idx: activeIndex});
             }
@@ -204,6 +207,7 @@ $(document).ready(function () {
         bootstro.goTo = function (idx) {
             //destroy current popover if any
             bootstro.destroyPopover(activeIndex);
+
             if (count !== 0) {
                 var p = getPopup(idx);
                 var $el = getElement(idx);
@@ -219,6 +223,22 @@ $(document).ready(function () {
                 }
 
                 $el.popover(p).popover('show');
+
+                $el.siblings('.popover')
+                    .on('click.bootstro', '.bootstro-next-btn', function (e) {
+                        bootstro.next();
+                        e.preventDefault();
+                        return false;
+                    })
+                    .on('click.bootstro', '.bootstro-prev-btn', function (e) {
+                        bootstro.prev();
+                        e.preventDefault();
+                        return false;
+                    })
+                    .on('click.bootstro', '.bootstro-finish-btn', function (e) {
+                        e.preventDefault();
+                        bootstro.stop();
+                    });
 
                 //scroll if neccessary
                 var docviewTop = $(window).scrollTop();
@@ -305,28 +325,8 @@ $(document).ready(function () {
         bootstro.bind = function () {
             bootstro.unbind();
 
-            var $html = $('html');
-
-            $html.on('click.bootstro', '.bootstro-next-btn', function (e) {
-                bootstro.next();
-                e.preventDefault();
-                return false;
-            });
-
-            $html.on('click.bootstro', '.bootstro-prev-btn', function (e) {
-                bootstro.prev();
-                e.preventDefault();
-                return false;
-            });
-
-            //end of show
-            $html.on('click.bootstro', '.bootstro-finish-btn', function (e) {
-                e.preventDefault();
-                bootstro.stop();
-            });
-
             if (settings.stopOnBackdropClick) {
-                $html.on('click.bootstro', 'div.bootstro-backdrop', function (e) {
+                $('.bootstro-backdrop').on('click.bootstro', function (e) {
                     if ($(e.target).hasClass('bootstro-backdrop')) {
                         bootstro.stop();
                     }
