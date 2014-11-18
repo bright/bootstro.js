@@ -16,7 +16,6 @@ $(document).ready(function(){
     (function( bootstro, $, undefined ) {
         var $elements; //jquery elements to be highlighted
         var count;
-        var popovers = []; //contains array of the popovers data
         var activeIndex = null; //index of active item
         var bootstrapVersion = 3;
 
@@ -32,7 +31,10 @@ $(document).ready(function(){
             
             //onComplete : function(params){} //params = {idx : activeIndex}
             //onExit : function(params){} //params = {idx : activeIndex}
-            //onStep : function(params){} //params = {idx : activeIndex, direction : [next|prev]}
+            //onStep : function(params){} //params = {idx : activeIndex, direction : [next|prev]} - when user goes next/back explicitly
+            //onShow : function(params){} //params = {idx : activeIndex, $element : popover element} - when the popover is shown (incl. the first time)
+            //onShown : function(params){} //params = {idx : activeIndex, $element : popover element} - relying on bootstrap shown.bs.popover event
+
             //url : String // ajaxed url to get show data from
             
             margin : 100, //if the currently shown element's margin is less than this value
@@ -251,7 +253,17 @@ $(document).ready(function(){
             {
                 var p = get_popup(idx);
                 var $el = get_element(idx);
-                
+
+                var that = this;
+                if (typeof settings.onShow == 'function') {
+                    settings.onShow.call(that, { idx: idx, $element: $el });
+                }
+                if (typeof settings.onShown == 'function') {
+                    $el.on('shown.bs.popover', function () {
+                        settings.onShown.call(that, { idx: idx, $element: $el });
+                    });
+                }
+
                 $el.popover(p).popover('show');
                   
                 //scroll if neccessary
