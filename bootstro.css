@@ -21,25 +21,11 @@
 .bootstro-highlight
 {
 	z-index: 9999;
-	position: relative;
-	border: 1px solid white;
 	background-color: white;
 }
 
 .bootstro-finish-btn-wrapper
 {
-	padding-top:10px;
     text-align:center;
     clear:both;
 }
-.bootstro-nav-wrapper
-{
-    margin-top:10px;
-}
-
-.bootstro-nav-wrapper button, .bootstro-finish-btn-wrapper button
-{
-	font-weight:bold;
-}
-
-
