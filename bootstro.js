@@ -236,6 +236,10 @@ $(document).ready(function () {
             if (i !== 'all') {
                 var $el = getElement(i);
                 $el.popover('destroy').removeClass('bootstro-highlight');
+
+                if (typeof settings.onHide === 'function') {
+                    settings.onHide.call(this, { idx: getStepCount(activeIndex), $element: $el });
+                }
             }
         };
 
