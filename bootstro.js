@@ -338,10 +338,13 @@ $(document).ready(function () {
                 var code = (e.keyCode ? e.keyCode : e.which);
                 if (code === 39 || code === 40) {
                     bootstro.next();
+                    e.stopImmediatePropagation();
                 } else if (code === 37 || code === 38) {
                     bootstro.prev();
+                    e.stopImmediatePropagation();
                 } else if (code === 27 && settings.stopOnEsc) {
                     bootstro.stop();
+                    e.stopImmediatePropagation();
                 }
             })
         };
