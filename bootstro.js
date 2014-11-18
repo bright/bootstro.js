@@ -178,7 +178,7 @@ $(document).ready(function(){
             var t = '';
             if (count > 1)
             {
-                t = "<span class='label label-success'>" + (i +1)  + "/" + count + "</span>";
+                t = "<span class='label label-success'>" + (i+1)  + "/" + count + "</span>";
             }
             p.title = $el.attr('data-bootstro-title') || '';
             if (p.title != '' && t != '')
@@ -206,7 +206,7 @@ $(document).ready(function(){
             
             //resize popover if it's explicitly specified
             //note: this is ugly. Could have been best if popover supports width & height
-            p.template = '<div class="popover" style="' + style + '"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div>' +
+            p.template = '<div class="popover bootstro-popover bootstro-popover-' + (i+1) + '" style="' + style + '"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div>' +
              '</div>';
             
             return p;
