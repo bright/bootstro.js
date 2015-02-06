@@ -173,9 +173,9 @@ $(document).ready(function () {
             return selectorArr.join(',');
         }
 
-        //get the element to intro at stack i 
+        //get the element to intro at stack i
         function getElement(i) {
-            //get the element with data-bootstro-step=i 
+            //get the element with data-bootstro-step=i
             //or otherwise the the natural order of the set
             if ($elements.filter('[data-bootstro-step=' + i + ']').size() > 0) {
                 return $elements.filter('[data-bootstro-step=' + i + ']');
@@ -231,14 +231,14 @@ $(document).ready(function () {
 
         //===================PUBLIC METHODS======================
         //destroy popover at stack index i
-        bootstro.destroyPopover = function (i) {
+        bootstro.destroyPopover = function (i, next) {
             i = i || 0;
             if (i !== 'all') {
                 var $el = getElement(i);
                 $el.popover('destroy').removeClass('bootstro-highlight');
 
                 if (typeof settings.onHide === 'function') {
-                    settings.onHide.call(this, { idx: getStepCount(activeIndex), $element: $el });
+                    settings.onHide.call(this, { idx: getStepCount(activeIndex), $element: $el, willShow: next });
                 }
             }
         };
@@ -258,7 +258,7 @@ $(document).ready(function () {
         //go to the popover number idx starting from 0
         bootstro.goTo = function (idx) {
             //destroy current popover if any
-            bootstro.destroyPopover(activeIndex);
+            bootstro.destroyPopover(activeIndex, idx);
 
             if (count !== 0) {
                 var p = getPopup(idx);
@@ -266,11 +266,11 @@ $(document).ready(function () {
 
                 var that = this;
                 if (typeof settings.onShow === 'function') {
-                    settings.onShow.call(that, { idx: idx, $element: $el });
+                    settings.onShow.call(that, { idx: idx, $element: $el, wasShowing: activeIndex });
                 }
                 if (typeof settings.onShown === 'function') {
                     $el.on('shown.bs.popover', function () {
-                        settings.onShown.call(that, { idx: idx, $element: $el });
+                        settings.onShown.call(that, { idx: idx, $element: $el, wasShowing: activeIndex });
                     });
                 }
 
