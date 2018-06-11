@@ -1,0 +1,19 @@
+{
+  "name": "bootstro",
+  "version": "1.0.0",
+  "description": "Bootstro.js ======== Tiny JS library taking advantage of bootstrap's popover to help guide your users around. <a href='http://clu3.github.com/bootstro.js'>Demo</a>",
+  "main": "bootstro.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bright/bootstro.js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bright/bootstro.js/issues"
+  },
+  "homepage": "https://github.com/bright/bootstro.js#readme"
+}
